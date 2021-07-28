@@ -1,0 +1,177 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>浅谈JavaScript中的堆栈和闭包 | 小鱼不想写代码</title><meta name="keywords" content="学习"><meta name="author" content="小鱼,1260314822@qq.com"><meta name="copyright" content="小鱼"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="【前言】在以前的java学习过程中，我们知道java 把内存划分成两种：一种是栈内存，另一种是堆内存。在函数中定义的一些基本类型的变量和对象的引用变量都是在函数的栈内存中分配。恰好在最近的学习过程中，了解了一些关于JavaScript中的内存机制，故在这里做一做分享，欢迎各位大佬在评论区交流指正。本文主要讲诉以下内容：  关于JavaScript的语言类型 什么是执行上下文 JavaScript的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈JavaScript中的堆栈和闭包">
+<meta property="og:url" content="https://riding-shark.github.io/2021/07/28/2021-07-28%20(1)/index.html">
+<meta property="og:site_name" content="小鱼不想写代码">
+<meta property="og:description" content="【前言】在以前的java学习过程中，我们知道java 把内存划分成两种：一种是栈内存，另一种是堆内存。在函数中定义的一些基本类型的变量和对象的引用变量都是在函数的栈内存中分配。恰好在最近的学习过程中，了解了一些关于JavaScript中的内存机制，故在这里做一做分享，欢迎各位大佬在评论区交流指正。本文主要讲诉以下内容：  关于JavaScript的语言类型 什么是执行上下文 JavaScript的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://riding-shark.github.io/img/005.jpg">
+<meta property="article:published_time" content="2021-07-28T11:01:06.064Z">
+<meta property="article:modified_time" content="2021-07-28T11:01:33.404Z">
+<meta property="article:author" content="小鱼">
+<meta property="article:tag" content="学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://riding-shark.github.io/img/005.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://riding-shark.github.io/2021/07/28/2021-07-28%20(1)/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: {"defaultEncoding":1,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '浅谈JavaScript中的堆栈和闭包',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: false,
+  postUpdate: '2021-07-28 19:01:33'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://tse2-mm.cn.bing.net/th/id/OIP-C.95a1ncJ39HDzOdQlrGXU9AAAAA?w=192&amp;h=193&amp;c=7&amp;o=5&amp;dpr=2&amp;pid=1.7" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/%E9%9F%B3%E4%B9%90"><i class="fa-fw /music/"></i><span> 0</span></a></li><li><a class="site-page child" href="/%E7%94%B5%E5%BD%B1"><i class="fa-fw /movies/"></i><span> 1</span></a></li><li><a class="site-page child" href="/%E7%85%A7%E7%89%87"><i class="fa-fw /Gallery/"></i><span> 2</span></a></li></ul></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/005.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">小鱼不想写代码</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/%E9%9F%B3%E4%B9%90"><i class="fa-fw /music/"></i><span> 0</span></a></li><li><a class="site-page child" href="/%E7%94%B5%E5%BD%B1"><i class="fa-fw /movies/"></i><span> 1</span></a></li><li><a class="site-page child" href="/%E7%85%A7%E7%89%87"><i class="fa-fw /Gallery/"></i><span> 2</span></a></li></ul></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">浅谈JavaScript中的堆栈和闭包</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-07-28T11:01:06.064Z" title="发表于 2021-07-28 19:01:06">2021-07-28</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-07-28T11:01:33.404Z" title="更新于 2021-07-28 19:01:33">2021-07-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="浅谈JavaScript中的堆栈和闭包"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>【前言】<br>在以前的java学习过程中，我们知道java 把内存划分成两种：一种是栈内存，另一种是堆内存。在函数中定义的一些基本类型的变量和对象的引用变量都是在函数的栈内存中分配。恰好在最近的学习过程中，了解了一些关于JavaScript中的内存机制，故在这里做一做分享，欢迎各位大佬在评论区交流指正。<br>本文主要讲诉以下内容：</p>
+<ul>
+<li>关于JavaScript的语言类型</li>
+<li>什么是执行上下文</li>
+<li>JavaScript的内存机制</li>
+<li>为什么要分栈和堆？</li>
+<li>堆栈与闭包之间的关系</li>
+</ul>
+<p>【正文】<br><strong>关于JavaScript的语言类型</strong><br>在讲述JavaScript的内存机制之前，我们先聊一下JavaScript这门语言类型。我们都知道语言分为强语言、弱语言、动态语言、静态语言，它们分别有着各自的特色。在使用之前需要确认其变量类型的语言是静态语言，而在动态语言中，运行过程当中需要检查数据类型，我们可以用一个变量来保存不同类型的数据。而支持隐式类型转换的语言称为弱类型语言，什么是隐式类型转换呢？例如C语言中可以将int类型转换为布尔类型，这就是隐式类型转换，而JavaScript和C语言一样都是属于弱语言，在JavaScript中我们并不需要对声明变量的类型，因为引擎（v8）在运行时会自动检查其数据类型并识别出来。这里我们引用一张图方便理解</p>
+<p><img src="https://img-blog.csdnimg.cn/c718ce1b7b8a4a8885ce0a755e7595aa.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ1OTQyODYw,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<p><strong>什么是执行上下文</strong><br>执行上下文是对JavaScript中的代码被解析和执行时所在环境的抽象概念，任何代码都是在执行上下文中运行的。<br>JavaScript中的执行上下文主要分为三种类型：</p>
+<ul>
+<li>全局执行上下文：基础的上下文，所有不在函数内部的代码都在全局上下文中，一个程序只有一个全局上下文</li>
+<li>函数上下文：函数被调用时, 都会为该函数创建一个新的上下文。每个函数都有它自己的执行上下文，一个程序可以有多个函数上下文</li>
+<li>Eval 函数执行上下文 ： 执行在 eval 函数内部的代码也会有它属于自己的执行上下文，与本文无关 不多阐述</li>
+</ul>
+<p>在下面的内容中，我们会大量用到执行上下文这个概念<br><strong>JavaScript的内存机制</strong><br>在本文的前言中，我们提到了Java这门语言的内存机制分为了堆和栈，JavaScript的内存机制也一样分为了堆和栈，但它和Java还是存在区别的。JavaScript中的栈只会存放一些原始类型的小数据，例如 Undefined、Null、Boolean、Number 和 String、Symbol等等，而在JavaScript中的堆中，则是用来存放引用类型，例如Object, Array, Function等，其数据存储在堆空间中，只在栈空间内存储了相对应的引用地址。<br>下面我们通过代码和图片来分析JavaScript中的调用栈过程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">function foo()&#123;</span><br><span class="line">    var a =1 //原始类型</span><br><span class="line">    var b =a</span><br><span class="line">    a = 2</span><br><span class="line">    console.log(a);//2</span><br><span class="line">    console.log(b);//1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">foo()</span><br><span class="line"></span><br><span class="line">function bar()&#123;</span><br><span class="line">    var c = &#123;name:&#x27;张三&#x27;&#125; //对象类型</span><br><span class="line">    var d = c  </span><br><span class="line">    c.name =&quot;李四&quot; </span><br><span class="line">    console.log(c);//李四</span><br><span class="line">    console.log(d);//李四</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">bar()</span><br></pre></td></tr></table></figure>
+<p>我们可以看到第一段代码中，我们对b赋值为a，然后改变了a的值，但是输出的结果中，b的值却仍是a原来的值1。在第二段代码中，同样是对c赋值更改为李四，但是输出的c、d却都是同样的值，这是为何呢？下面我们通过图片来进行分析：<br><img src="https://img-blog.csdnimg.cn/2e1ff1c531544d0fa34199b9b34252ae.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ1OTQyODYw,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>首先当JavaScript引擎第一次遇到你的代码时时，它会创建一个全局的执行上下文并且压入当前执行栈。每当引擎遇到一个函数调用，它会为该函数创建一个新的执行上下文并压入栈的顶部。也就是图中的foo函数执行上下文，一个程序只有一个全局执行上下文，但可以有多个函数执行上下文，它们在栈中都遵循“后进先出”的规则。<br>由图我们可以看到，此时引擎遇到了我们的代码，它创建了一个全局执行上下文并按照规则压入了栈的底端，之后继续向下走，分别遇到了foo函数和bar函数，生成了两个函数执行上下文，在图中我们写在一起（懒得重新画图了，这里其实应该是两个分开的函数执行上下文，bar在foo上方），由于a赋值为1，它是原始类型，所以a的数据储存在栈当中，我们将b赋值为a其实是深拷贝，所有原始值的赋值都是深拷贝，此时b拿到了a的值1，拿到值1的b与a此时已经没有关系了，它们是独立的个体，只是此时指向同一个地址所以拿到的值都是1，所以后面我们将a的值改为2，此时a指向了一个新的地址，拿到了2的值，而b还指向原来的地址，也就是1所存放的地方，这里放张图便于理解。<br><img src="https://img-blog.csdnimg.cn/a089e5aae0614ecc8b5bcbe34c5e8bbe.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQ1OTQyODYw,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>接着我们看到bar函数的执行上下文，可知c是对象类型，它的值存在堆当中，在栈中仅保留了引用地址1002，而此时对d赋值一个对象类型的值，这个叫做浅拷贝。浅拷贝复制了其引用地址1002。但后文对其修改name的值，是修改堆中的数据，c和d的引用地址1002都未发生改变，所以最后c和d都输出了李四。<br>这便是JavaScript中的内存机制，将不同类型的数据放于不同的位置，那么，这么做的意义是什么呢？<br><strong>为什么要分栈和堆？</strong><br>我们不由得发问，虽然我们搞懂了JavaScript的内存机制，但这样做的意义是什么呢？所有的数据直接存放在栈当中可不可以呢？<br>答案显然是不可以的。JavaScript引擎需要用栈来维护程序执行期间的上下文状态（环境），如果栈过大，所有数据都放在栈里面，栈里面的数据取用特别不方便，会影响上下文的切换效率，由于是数据是存放在栈当中的，先编译先入栈，后编译后入栈，执行完要进行销毁操作，但这样的话先进栈的函数执行上下文要等后进栈的函数执行上下文销毁完才能销毁，如果栈过大，就影响了上下文的切换效率，进而影响整个程序的执行效率。</p>
+<p><strong>堆栈与闭包之间的关系</strong></p>
+<p>我们直接看到下面这串代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">function foo() &#123;</span><br><span class="line">   var myName = &#x27;钉钉&#x27; //在堆里面</span><br><span class="line">   let test1 = 1 //在堆里面</span><br><span class="line">   const test2 = 2 //在栈里面</span><br><span class="line">   var innerBar = &#123;</span><br><span class="line">     setName: function(newName) &#123;</span><br><span class="line">       myName = newName //引用了外部变量</span><br><span class="line">     &#125;,</span><br><span class="line">     getName: function() &#123;</span><br><span class="line">       console.log(test1); //引用了外部变量</span><br><span class="line">       return myName</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   return innerBar</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> var bar = foo()</span><br><span class="line"> bar.setName(&#x27;涛&#x27;)</span><br><span class="line"> console.log(bar.getName());</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在这我们可以很清晰的知道，这段代码中，形成了一个闭包。那么，在这闭包情况下，其代码内的值得空间分配和普通情况下有什么不同呢？我们可以看到，代码中得myName、test1、test2都是原始类型得变量，按我们前面所说得JavaScript分配机制来看，它们应该都储存在栈当中，但是结果并不这样得。这三个变量中只有test2在栈里面储存。<br>因为被闭包引用的变量会去到堆里的一个叫做closure的闭包对象里面去，并且将数据存在里面，而在栈中只留下一个引用地址指向这个堆里的闭包对象。由于闭包的原因，这个foo的执行上下文不能被销毁，所以栈内的test2仍在栈中，但是我们并不能在外面调用到它了，但它确实是存在的。<br>这次就写到这里，下次会针对闭包问题再详细写一篇文章，待我对闭包理解更深刻之后。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:1260314822@qq.com">小鱼</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://riding-shark.github.io/2021/07/28/2021-07-28%20(1)/">https://riding-shark.github.io/2021/07/28/2021-07-28%20(1)/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://riding-shark.github.io" target="_blank">小鱼不想写代码</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="/img/005.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2021/07/28/2021-07-28/"><img class="next-cover" src="/img/005.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">浅谈JS的面向对象</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://tse2-mm.cn.bing.net/th/id/OIP-C.95a1ncJ39HDzOdQlrGXU9AAAAA?w=192&amp;h=193&amp;c=7&amp;o=5&amp;dpr=2&amp;pid=1.7" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">小鱼</div><div class="author-info__description">路漫漫其修远兮，吾将上下而求索</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://juejin.cn/user/1073567576367544"><i class="far fa-paper-plane"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="/img/003.jpg" target="_blank" title="QQ"><i class="fab fa-qq"></i></a><a class="social-icon" href="/img/004.jpg" target="_blank" title="WeChat"><i class="fab fa-weixin"></i></a><a class="social-icon" href="https://gitee.com/" target="_blank" title="Gitee"><i class="fab fa-git"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">三点几哩，做酶做啊 饮茶先啦 三点几饮 饮茶先啦</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/07/28/2021-07-28%20(1)/" title="浅谈JavaScript中的堆栈和闭包"><img src="/img/005.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="浅谈JavaScript中的堆栈和闭包"/></a><div class="content"><a class="title" href="/2021/07/28/2021-07-28%20(1)/" title="浅谈JavaScript中的堆栈和闭包">浅谈JavaScript中的堆栈和闭包</a><time datetime="2021-07-28T11:01:06.064Z" title="发表于 2021-07-28 19:01:06">2021-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/07/28/2021-07-28/" title="浅谈JS的面向对象"><img src="/img/005.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="浅谈JS的面向对象"/></a><div class="content"><a class="title" href="/2021/07/28/2021-07-28/" title="浅谈JS的面向对象">浅谈JS的面向对象</a><time datetime="2021-07-27T17:12:45.737Z" title="发表于 2021-07-28 01:12:45">2021-07-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/07/26/hello-world/" title="Hello World"><img src="/img/005.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hello World"/></a><div class="content"><a class="title" href="/2021/07/26/hello-world/" title="Hello World">Hello World</a><time datetime="2021-07-26T10:19:14.780Z" title="发表于 2021-07-26 18:19:14">2021-07-26</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By 小鱼</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">简</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
